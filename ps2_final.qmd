@@ -2,9 +2,9 @@
 title: "Psych201a, Problem Set 2: Tidying Data"
 author: "Andrew Lampinen, modified by Janna Wennberg"
 date: "Tuesday, October 15, 2024"
-format:
-  html:
-    toc: true
+format: pdf
+  # html:
+  #   toc: true
 ---
 
 In this assignment we'll learn about `dplyr` and `tidyr`, two packages from the `tidyverse` that allow elegant and easily understandable data tidying and manipulation.
@@ -215,12 +215,16 @@ performance_hyp_long_d = performance_hyp_long_d |>
 ```
 
 Now you can help! For the rating dataset, write a test on a measurement name, using `grepl` or `%in%` to figure out whether it's a recall or a music rating. Your new `IsRecall` column should be true if the measurement name contain either "Friends" or "Strangers".
+```{r}
+
+```
 
 ```{r}
 rating_hyp_long_d <- rating_hyp_long_d |>
   mutate(
     IsRecall = grepl("Friends|Strangers", Measurement)
   )
+    
 ```
 
 Here are a couple other useful ways of manipulating columns. (You won't remember all the functions you see here now, but that's okay. You can always reference this tutorial later if there's something you need to figure out how to do.)
@@ -260,6 +264,7 @@ We'll add a new z-scored value column. However, we have to be careful! We want t
 
 To make this more concrete, let's see how the `group_by` function can let us compute means within different groups, for example mean scores on the two different games.
 
+
 ```{r}
 performance_hyp_long_d |>
   group_by(ConfrontationalGame, WithMusic) |>
@@ -280,9 +285,14 @@ performance_hyp_long_d = performance_hyp_long_d |>
 The rating hypothesis analysis also requires some grouped manipulation. The experimenters collected repeated measures on ratings in each emotion category and each music/recall category from each game. For this analysis, they averaged all the ratings over the following two variables: the given emotion and the game type, to produce a nice summary. Your job is to implement this, calling the new variable MeanRating, and save the summarized data in a new data frame called `rating_summary_d`. (Hint: use a `group_by` and a `summarize`.)
 
 ```{r}
-rating_summary_d = rating_hyp_long_d |>
-  ## your code here
-  
+rating_summary_d <- rating_hyp_long_d |>
+  group_by(ConfrontationalGame, Emotion) |>
+  summarize(MeanRating = mean(Rating, na.rm = TRUE))
+
+# rating_summary_d = rating_hyp_long_d |>
+#   ## your code here
+#     group_by(ConfrontationalGame, Emotion) |>
+#     summarize(MeanRating = mean(Rating, na.rm=T))
 ```
 
 Let's take a look at the result:
@@ -330,7 +340,12 @@ Now we're finally to reproduce Fig. 2 from Tamir et al., we just need to get the
 
 ```{r}
 performance_summary_d = performance_diff_d |>
-  # your code here
+   # your code here
+  group_by(ConfrontationalGame, MusicCondition) |>
+  summarize(MeanImprovementScore = mean(ImprovementScore, na.rm = TRUE))|>
+  ungroup()
+
+ 
 ```
 
 ```{r}
@@ -340,8 +355,14 @@ performance_summary_d
 and plot it!
 
 ```{r TamirFig2}
-performance_summary_d |>
   # your code here
+  ggplot(performance_summary_d, aes(x=ConfrontationalGame, y = MeanImprovementScore, fill = MusicCondition)) +
+  geom_bar(position="dodge", stat="identity") + 
+  scale_fill_brewer(palette="Set1")
+```
+```{r}
+#Finished
+
 ```
 
 (Bonus: also calculate the SEM in the summary data, and then add errorbars to the plot with `geom_errorbar`!)
